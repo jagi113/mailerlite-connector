@@ -10,12 +10,12 @@ API_TOKEN = os.getenv("API_TOKEN")
 
 section = "subscribers"
 
-# fields for subscriber creation 
+# Fields for subscriber creation 
 email = "dummy2@mail.com"
 name = "Dummy2"
 last_name = "Stupid2"
 
-# example of data payload for mailerlite.com
+# Example of data payload for mailerlite.com
 data = {
     "email": email,
     "fields": {
@@ -24,7 +24,7 @@ data = {
     }
 }
 
-# example of payload for mailerlite_connector
+# Example of payload for mailerlite_connector
 payload = {
   "API_TOKEN": API_TOKEN,
   "request": "get",
@@ -32,18 +32,19 @@ payload = {
   "data": data
 }
 
+
 def mailerlite_connector(payload = payload):
   
-  # mailerlite version section
-  # this is request setting for API V1
-  # it is supported for all accounts, yet rate limits is 60 requests per minute 
+  # MAILERLITE VERSION SECTION
+  # This is request setting for API V1
+  # It is supported for all accounts, yet rate limits is 60 requests per minute 
   base_api_url = "https://api.mailerlite.com/api/v2/"
   headers={
       "Content-Type": "application/json",
       "X-MailerLite-ApiKey": payload["API_TOKEN"]
   }
   
-  # sending request section
+  # Sending request section
   url = base_api_url+payload["section"]
   
   if payload["request"] == "get":
@@ -51,6 +52,7 @@ def mailerlite_connector(payload = payload):
   elif payload["request"] == "post":
     response = requests.post(url, data=json.dumps(payload["data"]), headers=headers)
   return(response.json())
+
 
 
 if __name__ == "__main__":
