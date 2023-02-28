@@ -11,5 +11,5 @@ There however might be bigger problems for more advanced features. I am not sure
 Currently connector can sign up a user to an ESP providing his name, last name and email address (created for testing purposes).
 Very develeped Python Wrapper for Mailerlite API (handles V1) can be found at https://github.com/skoudoro/mailerlite-api-python
 
-Question 1: What api endpoint should I work on? Or should I try to implement both?
+Question 1: What api endpoint should I work on? Or should I try to implement both?  
 Question 2: Are there any preferences or suggestions what package to use for making connector async?
