@@ -7,7 +7,10 @@ import aiohttp
 
 import logging
 
-logging.getLogger('asyncio').setLevel(logging.WARNING)
+logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', 
+    level=logging.INFO,
+    datefmt='%Y-%m-%d %H:%M:%S'
+    )
 
 class MailerLite():
   def __init__(self, API_TOKEN:str):
@@ -25,8 +28,11 @@ class MailerLite():
     for response in final_responses:
       if "error" in response:
         logging.critical(response["error"]["message"]) 
+      else:
+        logging.info(response)
 
     self.payload.clear()
+    
     return final_responses
   
   
