@@ -7,32 +7,50 @@ import aiohttp
 
 import logging
 
-logging.basicConfig(format='%(asctime)s | %(levelname)s: %(message)s', level=logging.NOTSET)
+logging.getLogger('asyncio').setLevel(logging.WARNING)
 
-logging.debug('Here you have some information for debugging.')
-logging.info('Everything is normal. Relax!')
-logging.warning('Something unexpected but not important happend.')
-logging.error('Something unexpected and important happened.')
-logging.critical('OMG!!! A critical error happend and the code cannot run!')
-
-class Mailerlite():
+class MailerLite():
   def __init__(self, API_TOKEN:str):
           self.API_TOKEN = API_TOKEN
           self.payload = []
 
   # METHODS FOR SENDING REQUESTS
   def send_to_api(self):
-    return asyncio.run(self.prepare_requests())
+    try:
+      final_responses = asyncio.run(self.make_requests())
+    except Exception as e:
+      logging.critical("Failed to make requests", exc_info=True)
+      final_responses = []
+
+    for response in final_responses:
+      if "error" in response:
+        logging.critical(response["error"]["message"]) 
+
+    self.payload.clear()
+    return final_responses
   
   
-  async def prepare_requests(self):
+  async def make_requests(self):
     async with aiohttp.ClientSession() as session:
       
       requests = self.create_requests(session)
-      responses = await asyncio.gather(*requests)
 
-      results = [ await response.json() for response in responses]
-    return results  
+      try:
+        responses = await asyncio.gather(*requests)
+      except aiohttp.ClientConnectorError as e:
+        logging.critical(f"Connection Error: {str(e)}")
+        responses = []
+        
+      results = []
+      for response in responses:
+        try:
+          results.append(await response.json())
+        except Exception as e:
+          logging.critical(f"Failed to get JSON response: {str(e)}")
+          results.append({})
+          
+      return results 
+
   
   
   def create_requests(self, session):
@@ -47,18 +65,22 @@ class Mailerlite():
       }
       
       url = version["base_api_url"]+self.payload[i]["url_path"]
-      if self.payload[i]["method"] == "get":
-        requests.append(session.get(
-          url, 
-          headers=version["headers"]
-          ))
-      elif self.payload[i]["method"] == "post":
-        requests.append(session.post(
-          url, 
-          data=json.dumps(self.payload[i]["data"]), 
-          headers=version["headers"],
-          ))
-    return requests
+
+      try:
+        if self.payload[i]["method"] == "get":
+          requests.append(session.get(
+            url, 
+            headers=version["headers"]
+            ))
+        elif self.payload[i]["method"] == "post":
+          requests.append(session.post(
+            url, 
+            data=json.dumps(self.payload[i]["data"]), 
+            headers=version["headers"],
+            ))
+      except Exception as e:
+        logging.critical(f"Failed to create request: {str(e)}")
+    return requests   
 
 
 
@@ -105,9 +127,9 @@ class Mailerlite():
     })
   
 
-  # Add a new single subscriber to the group with the given name. If the group or subscriber doesn't exist, it gets created. 
+  # Adds a new single subscriber to the group with the given name. If the group or subscriber doesn't exist, it gets created. 
   # If multiple groups with the same name exist, the subscriber is added to the oldest group.
-  def assign_group_subscriber(self, subscriber_name, subscriber_email, group_name): 
+  def assign_group_subscriber(self, subscriber_name: str, subscriber_email: str, group_name: str): 
     self.payload.append({
       "method": "post",
       "url_path": "groups/group_name/subscribers",
@@ -117,6 +139,7 @@ class Mailerlite():
         "name": subscriber_name
         }
     })  
+      
 
 
 
@@ -130,12 +153,14 @@ if __name__ == "__main__":
   # For creating a tag/group: create_group(group_name)
   # For creating or just assigning a subscriber to a (new or existing) tag/group: assign_group_subscriber(subscriber_name, subscriber_email, group_name)
   
-  mailerlite_account = Mailerlite(API_TOKEN)
+  mailerlite_account = MailerLite(API_TOKEN)
   mailerlite_account.create_subscriber("Jason Crazy2", "jason@mail.com2")
   mailerlite_account.create_group("class_group")
-  mailerlite_account.assign_group_subscriber("Dummy2", "dummy2@mail.com", "class_group")
+  mailerlite_account.assign_group_subscriber("Dummy3", "dummy3@mail.com", 3)
     
   results = mailerlite_account.send_to_api()
+ 
+
   jresults = json.dumps(results, indent=2)
   with open("output.json", "w") as output:
     output.write(jresults)
