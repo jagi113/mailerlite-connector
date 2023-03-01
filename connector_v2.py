@@ -59,3 +59,27 @@ def mailerlite_connector(payload = payload):
 
 if __name__ == "__main__":
   print(mailerlite_connector(payload))
+  
+  
+  
+  # MAILERLITE VERSION SECTION
+# This is request setting for API V1
+# It is supported for all accounts, yet rate limits is 60 requests per minute 
+v1 = {
+  "base_api_url" : "https://api.mailerlite.com/api/v2/",
+  "headers" : {
+    "Content-Type": "application/json",
+    "X-MailerLite-ApiKey": API_TOKEN
+  }
+}
+
+# This is request setting for API V2
+# It is supported for their accounts created after March 22nd, 2022, yet rate limits is 120 requests per minute.
+v2 = {
+  "base_api_url" : "https://connect.mailerlite.com/api/",
+  "headers" : {
+      "Content-Type": "application/json",
+      "Accept": "application/json",
+      "Authorization": f'Bearer {API_TOKEN}',
+  }
+}
