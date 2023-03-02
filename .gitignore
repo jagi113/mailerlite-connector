@@ -2,3 +2,5 @@ venv
 api_token.txt
 .env
 output.json
+connector_v1.py
+connector_v2.py
