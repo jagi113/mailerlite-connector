@@ -11,7 +11,7 @@ logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s',
                     )
 
 
-def check_status(response):
+def check_response_status(response):
     if response.status == 401:
         logging.critical(
             "Connection was not established! Make sure your API TOKEN is correct!")
@@ -42,7 +42,7 @@ class MailerLite():
 
             results = []
             for response in responses:
-                check_status(response)
+                check_response_status(response)
                 
                 try:
                     result = await response.json()
